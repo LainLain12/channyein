@@ -70,7 +70,7 @@ func main() {
 
 	// Register the handlers
 	log.Println("Server started at :8080 (Asia/Yangon time zone)")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":2222", nil); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
