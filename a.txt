@@ -1,0 +1,1 @@
+map[change:-7 flag_url:<nil> high:823.69 index_display_name:SET50 index_name:SET50 last:818.09 low:814.02 market:SET percent_change:-0.85 prior:825.09 total_value:3.480666543726e+10 total_volume:1.9674226e+09]
