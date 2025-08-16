@@ -1,10 +1,10 @@
 package main
 
 import (
-	cards "channyein/Cards"
-	chat "channyein/Chat"
-	gift "channyein/Gift"
+	cards "channyein/cards"
+	chat "channyein/chat"
 	"channyein/db"
+	gift "channyein/gift"
 	"channyein/holiday"
 	live "channyein/live"
 	"channyein/settings"
