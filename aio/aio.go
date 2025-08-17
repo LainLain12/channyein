@@ -4,6 +4,7 @@ import (
 	"channyein/db"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 // GiftItem matches your gift table JSON form
@@ -36,6 +37,13 @@ func GetGiftSliderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	// build host prefix for gift images
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	hostPrefix := scheme + "://" + r.Host + "/gift/images/"
+
 	// load gifts
 	gifts := []GiftItem{}
 	grows, err := conn.Query(`SELECT id, name, category, img_link FROM gift ORDER BY id DESC`)
@@ -44,6 +52,10 @@ func GetGiftSliderHandler(w http.ResponseWriter, r *http.Request) {
 		for grows.Next() {
 			var g GiftItem
 			if err := grows.Scan(&g.ID, &g.Name, &g.Category, &g.ImgLink); err == nil {
+				// convert filename to full URL (if not already a full URL)
+				if g.ImgLink != "" && !strings.HasPrefix(g.ImgLink, "http") {
+					g.ImgLink = hostPrefix + strings.TrimLeft(g.ImgLink, "/")
+				}
 				gifts = append(gifts, g)
 			}
 		}
