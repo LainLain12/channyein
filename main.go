@@ -1,6 +1,7 @@
 package main
 
 import (
+	"channyein/aio"
 	cards "channyein/cards"
 	chat "channyein/chat"
 	"channyein/db"
@@ -15,8 +16,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/go-delve/delve/service/api"
 )
 
 func main() {
@@ -78,7 +77,7 @@ func main() {
 	http.HandleFunc("/slider/delete", slider.DeleteSliderHandler) // Assuming deleteSliderHandler is defined in slider package
 
 	//Gift&Slider
-	http.HandleFunc("/giftslider", api.GetGiftSliderHandler)
+	http.HandleFunc("/giftslider", aio.GetGiftSliderHandler)
 
 	// Register the handlers
 	log.Println("Server started at :8080 (Asia/Yangon time zone)")
