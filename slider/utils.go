@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS slider (
 	return err
 }
 
-// InsertSlider inserts a slider row.
+// InsertSlider inserts a slider row into the slider table.
 func InsertSlider(db *sql.DB, s Slider) (int64, error) {
 	res, err := db.Exec(`INSERT INTO slider (forwardlink, link) VALUES (?, ?)`, s.ForwardLink, s.Link)
 	if err != nil {

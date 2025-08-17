@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 )
 
@@ -20,10 +19,8 @@ func UpdateSlider(conn *sql.DB, s Slider) error {
 }
 
 // PostSliderHandler handles multipart POST to create or update a slider.
-// Form:
-// - jsonstring : optional JSON for Slider { "id":..., "forwardlink": "...", "link": "..." }
-// - image      : optional file; if provided saved to slider/images and link updated
-// - id         : optional form value (overrides json id) to indicate update
+// It reads the slider object from form field "jsonstring" (JSON).
+// If json contains id>0 -> try update (if row exists), otherwise insert.
 func PostSliderHandler(w http.ResponseWriter, r *http.Request) {
 	const imgDir = "slider/images"
 	if err := r.ParseMultipartForm(20 << 20); err != nil {
@@ -38,7 +35,7 @@ func PostSliderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	hostPrefix := scheme + "://" + r.Host + "/slider/images/"
 
-	// read jsonstring if provided
+	// read jsonstring (must contain slider data; id optional)
 	var s Slider
 	if js := r.FormValue("jsonstring"); js != "" {
 		if err := json.Unmarshal([]byte(js), &s); err != nil {
@@ -47,14 +44,7 @@ func PostSliderHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// override id from form param if provided
-	if idStr := r.FormValue("id"); idStr != "" {
-		if v, err := strconv.Atoi(idStr); err == nil {
-			s.ID = v
-		}
-	}
-
-	// handle optional image upload
+	// handle optional image upload, update s.Link if provided
 	file, fh, err := r.FormFile("image")
 	if err == nil {
 		defer file.Close()
@@ -94,17 +84,25 @@ func PostSliderHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
+	// If ID provided in JSON, check if row exists -> update, otherwise insert
 	if s.ID > 0 {
-		// update
-		if err := UpdateSlider(conn, s); err != nil {
-			http.Error(w, "update failed", http.StatusInternalServerError)
+		var cnt int
+		if err := conn.QueryRow("SELECT COUNT(1) FROM slider WHERE id = ?", s.ID).Scan(&cnt); err != nil {
+			http.Error(w, "db query error", http.StatusInternalServerError)
 			return
 		}
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"status": "updated",
-			"data":   s,
-		})
-		return
+		if cnt > 0 {
+			if err := UpdateSlider(conn, s); err != nil {
+				http.Error(w, "update failed", http.StatusInternalServerError)
+				return
+			}
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"status": "updated",
+				"data":   s,
+			})
+			return
+		}
+		// If id provided but not found, fall through to insert (will ignore provided id)
 	}
 
 	// insert
