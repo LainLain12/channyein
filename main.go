@@ -8,6 +8,7 @@ import (
 	"channyein/holiday"
 	live "channyein/live"
 	"channyein/settings"
+	"channyein/slider"
 	"channyein/threed"
 	history "channyein/twodhistory"
 	"log"
@@ -17,7 +18,7 @@ import (
 )
 
 func main() {
-
+	//aaaabbb
 	//LiveRunner
 	// Initialize the live runner
 	// Start periodic timer: calls checktimerTick() every 500ms
@@ -29,6 +30,7 @@ func main() {
 	threed.CreateThreeDTable(db)
 	settings.CreateSettingsTable(db)
 	holiday.CreateHolidayTable(db)
+	slider.EnsureSliderTable(db)
 
 	os.Setenv("TZ", "Asia/Yangon")
 	time.Local, _ = time.LoadLocation("Asia/Yangon")
@@ -67,6 +69,11 @@ func main() {
 	http.HandleFunc("/holiday", holiday.GetAllHandler(db))
 	http.HandleFunc("/holiday/add", holiday.PostHolidayHandler(db))
 	//Holiday
+
+	//slider
+	http.HandleFunc("/slider", slider.GetAllHandler)
+	http.HandleFunc("/slider/add", slider.PostSliderHandler)
+	http.HandleFunc("/slider/delete", slider.DeleteSliderHandler) // Assuming deleteSliderHandler is defined in slider package
 
 	// Register the handlers
 	log.Println("Server started at :8080 (Asia/Yangon time zone)")
